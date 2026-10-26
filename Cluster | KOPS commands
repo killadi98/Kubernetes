@@ -1,0 +1,20 @@
+# we don't need to install docker like minikube.
+# just install kops from official website.
+
+curl -Lo kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+chmod +x kops
+sudo mv kops /usr/local/bin/kops
+
+| kops version | gives the version of kops installed | to check if kops is installed |
+
+# install kubectl like we did for minikube
+
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+
+| kubectl version |
+
+| chmod +x kubectl |
+
+| mv kubectl /usr/local/bin/ |
+
+
