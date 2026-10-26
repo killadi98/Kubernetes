@@ -1,0 +1,11 @@
+MINIKUBE:
+First launch an EC2 instance in AWS with following configurations:
+Amazon Linux AMI
+c7i-flex.large instance type. WHY?
+Official minikube website says minikube installation requires 2cpus, 2gb of free memory and 200gb of free disk space. Hence c7i-flex.large
+Select or create a key pair
+Select or create a security group(22 Port is enough)
+28 GB of ebs volume and Launch.
+
+Connect to the instance via SSH
+And install docker since minikube need one container manager tool.
