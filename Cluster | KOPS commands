@@ -17,4 +17,53 @@ curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stabl
 
 | mv kubectl /usr/local/bin/ |
 
+# I already have a bucket
+
+# If not create an s3 bucket | bucket name should be unique though and enable bucket versioning
+
+Give permission to this instance using IAM (Identity Access Management)
+
+| aws s3 ls | list of buckets |
+
+| export KOPS_STATE_STORE=s3://kopsbucket98 | stores cluster data in the bucket named kopsbucket98
+
+# creating cluster with one worker node in one availability zone and one in another availability zone
+
+kops create cluster --name clustername.k8s.local --zones us-east-1a,us-east-1b --master-count 1 --master-size c7i-flex.large --master-volume-size 30 --node-count 2 --node-size t3.micro --node-volume-size 20 --image=ami-0d97d7f07b25dd693
+
+#after creating the cluster, run
+kops update cluster --name clustername.k8s.local --yes --admin
+
+| kops get cluster | gives the list of cluster |
+
+| kops delete cluster cluster_name --yes | deletes the cluster |
+
+| kubectl get nodes | gives the list of nodes like control plane and worker nodes | also works with kubectl get no |
+
+| kubectl run pod-1 --image=nginx | creates a pod based on nginx image | imperative method
+
+#manifest file to create pos:
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-2
+spec:
+  containers:
+    - name: cont1
+      image: shaikmustafa/cycle
+      ports:
+        - containerPort: 80
+
+kubectl create -f pod.yml
+
+| kubectl get po -o wide | give running pods with ip addressed and instance ids| 
+
+| kubectl describe pod pod-1 | to get full info about the pod |
+
+
+
+
+
 
