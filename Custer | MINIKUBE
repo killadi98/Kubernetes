@@ -4,6 +4,7 @@
 |---|---|---|
 | `docker ps -a` | List all containers | `-q` for IDs only |
 
+#MINIKUBE is a single node cluster
 
 #connect to the ec2 instance and go to the root user.
 
