@@ -62,6 +62,58 @@ kubectl create -f pod.yml
 
 | kubectl describe pod pod-1 | to get full info about the pod |
 
+< Labels & Selectors >
+
+#how to set labels?
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-2
+  labels:
+    app: swiggy
+    env: dev
+    client: tcs
+spec:
+  containers:
+    - name: cont1
+      image: nginx
+      ports:
+        - containerPort: 80
+
+| kubectl get po --show-labels |
+
+# we can also give labels to already exsting labels
+
+| kubectl label pod pod-2 app=zomato env=dev client=flm |
+
+| kubectl get po -l app=swiggy | gives only the pods with labels app=swiggy |
+
+| kubectl get po -l client!=tcs | gives all other except the pods with tcs as clients |
+
+| kubectl label pod pod-2 client- | unabels the pod | removes the client label |
+
+#two types of selector and set based selector. The above are equality based selector.
+
+#set based selectors are for multiple labels
+
+| kubectl get po -l 'app in (swiggy,zomato)' | gives pods with app labels as swiggy and zomato |
+
+#Finally do not forget to delete the cluster after practice
+
+| kops get cluster | gives the clusters created |
+
+| kops delete cluster --name clustername.k8s.local --yes | deletes the entire cluster |
+
+
+
+
+
+
+
+
+
+
 
 
 
