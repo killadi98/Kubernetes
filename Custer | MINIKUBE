@@ -1,0 +1,77 @@
+# <MINIKUBE> Commands
+
+| Command | What it does | Notes |
+|---|---|---|
+| `docker ps -a` | List all containers | `-q` for IDs only |
+
+
+#connect to the ec2 instance and go to the root user.
+
+sudo -i
+yum install docker -y && systemctl start docker && systemctl enable docker
+
+#install minikube using minikubes official installation commands.
+
+curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+
+| minikube version | gives the version opf minikube installed | to chevk if the minikube is installed |
+
+| minikube start --driver=docker --force | starts minikube | systemctl won't work to start minikube |
+
+| minikube status | gives the status of minikube |
+
+# install one more tool named kubectl
+kubectl is the command-line tool for controlling a Kubernetes cluster. It talks to the cluster’s API server, so you can deploy apps, inspect resources, view logs, and manage the cluster without a GUI.
+
+| curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" | Installs kubectl | command from k8s official website |
+
+# give executable permissions to this file.
+| chmod +x kubectl | add x permission |
+
+| mv kubectl /usr/local/bin/ | moves kubectl to the default path | this is the default path on linux machines |
+
+# We can create any objects in k8s using imperative and declarative methods.
+# Imperative (command line)
+# Declarative (Manifest files)
+
+# Let's create a pod using imperative method
+
+| kubectl run mypod --image nginx | creates a pod with the name mypod with a container based on nginx image | We should only give an image from dockerhub |
+
+| kubectl get pods | list of pods | can also use kubectl get po |
+
+# Let's create a pod using declarative method
+
+| vim pod.yml | creates and opens yml format file | this can be the manifest file for creating the pods |
+
+ #every object in k8s has an api version
+
+| kubectl api-resources | Gives complete info |
+|| kubectl api-resources | grep -i pod || using grep ||
+
+---
+apiVersion : v1 
+kind: Pod
+metadata:
+  name: pod-2
+spec:
+  containers:
+    - name: cont1
+      image: shaikmustafa/dm
+      ports:
+        - containerPort: 80
+
+| kubectl create -f pod.yml | create a pod named pod-2 | similar command is used to create any object using a yml file | -f represents the file name |
+
+| kubectl delete pod pod-2 | deletes pod named pod-2 |
+
+| kubectl delete pod mypod pod-1 pod-2 | deletes pods named mypod, pod-1 and pod-2 |
+
+| kubectl delete pod --all | deletes all pods |
+
+
+
+
+
+
