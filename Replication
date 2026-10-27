@@ -1,0 +1,188 @@
+Replication controller maintains the mentioned number of pods(replicas). It keeps the mentioned number of pods always running. But it is no longer in wide use because it works on equality based selector.
+
+Replica Set however works on set based selector.
+
+< Replica set manifest file >
+
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: rs-name
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: swiggy
+  template:
+    metadata:
+      labels:
+        app: swiggy
+    spec:
+      containers:
+        - name: cont1
+          image: shaikmustafa/dm
+          ports:
+            - containerPort: 80
+
+| kubectl get rs |
+
+# Even if u manually delete a pod, the replicaset creates another pod.
+
+| kubectl describe rs rs-name |
+
+| kubectl get po --show-labels |
+
+# We have the pods now But they are not exposed. hence we create a load balancer service
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flm-loadbalancer
+spec:
+  type: LoadBalancer
+  selector:
+    app: swiggy
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30003
+
+# If we want to increase the number of pods:
+
+| kubectl scale rs rs-name --replicas=6 | Increases the number of running pods to 6 |
+
+| kubectl scale rs rs-name --replicas=4 | Decreases the number of running pods to 4 |
+
+# But this is manual scaling. which can also be done automatically.
+
+# If we want to scale the pods through manifest file, make the necessary changes in the manifest file and run
+
+| kubectl apply -f rs.yml | This applies the configurations |
+
+# know the difference betweeen apply and create.
+
+# If the client updates any changes. We have to re-create replicaset with the new image by deleting the old rs. Since only applying changes does not upgrade the image changes.
+
+# By following this we get downtime. hence we use deployment objects from kubernetes.
+
+< Deployment >
+
+# Deployment object offers high avalability with zero downtime. Also has Rolling Updates & rollback with autoscaling.
+
+Deployment ---> ReplicaSet ---> Pods ---> Containers
+
+# Deployment manifest file
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-name
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: swiggy
+  template:
+    metadata:
+      labels:
+        app: swiggy
+    spec:
+      containers:
+        - name: cont1
+          image: shaikmustafa/dm
+          ports:
+            - containerPort: 80
+
+| kubectl get deploy |
+
+| kubectl scale deploy deployment-name --replicas=6 | scaling via CLI |
+
+| kubectl apply -f deployment-name.yml | scaling via manifest file |
+
+# if we change the image and apply the changes, what deployment object does is it creates a new replicaset all together to reflect the changes without any downtime. This happens by creating a pod from the new replicaset, deleting a pod from the old replicaset and so on till the old replica set is deleted completely.
+
+| kubectl rollout history deploy deployment-name | gives the history of all the versions |
+
+< output >
+REVISION  CHANGE-CAUSE
+1         <none>
+2         <none>
+3         <none>
+4         <none>
+
+| kubectl rollout undo deploy deployment-name --to-revision=2 |
+
+| kubectl rollout status deploy deployment-name |
+
+< output >
+deployment "deployment-name" successfully rolled out
+
+| kubectl rollout history deploy deployment-name |
+
+< output >
+REVISION  CHANGE-CAUSE
+1         <none>
+3         <none>
+4         <none>
+5         <none>
+
+# the change cause can be given through the manifest files
+
+# We can also update the image via CLI
+
+| kubectl set image deploy deployment-name cont1=nginx |
+
+< Horizontal Pod Autoscaling >
+
+AutoScaling is of two types:
+---> Horizontal:
+      lets say initially we have 3 pods. if i take a threshold value of average cpu utilization as       60%, automatically number of pods increases to decrease the average cpu utilization. which         is directly proportional to the traffic. And when traffic reducesc to, say 5% of avg cpu           utilization, the number of pods decreases. This is horizontal scaling.
+---> Vertcal:
+      this kind of scaling does not increase the number of pods, but increases the size of the           servers. sixe meaning the instance type. Increasing the resources of the pod. For instance,        changing the t3.micro instance type to c7i-flex.large.
+
+# Horizontal is preferred because vertical can only happen by sopping the instance type.
+
+< HPA Manifest file >
+
+|| kubectl api-resources | grep -i "hpa" || for the api version of hpa ||
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: my-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: deployment-name
+  minReplicas: 2
+  maxReplicas: 10
+  
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+
+# to replicate dummy load, we can use a package called stress
+
+# connect the kops instance with multiple terminals
+
+| kubectl get po -w |
+
+| kubectl exec -it pod-name -- bash | to get into the pod |
+
+| apt update -y && apt install stress -y | instlls stress package |
+
+| stress -c 2 -t 150 -v | applying load on the container |
+
+| kubectl rollout pause deploy deployment-name | Pauses the new updates |
+
+| kubectl rollout resume deploy deployment-name | It will allow the pending updates |
+
