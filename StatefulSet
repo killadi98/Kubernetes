@@ -1,0 +1,91 @@
+# stateless and stateful
+
+# Stateless: No past data. They do not depend on the previously stored information. Example can be an application
+
+# Stateful: the applications need to maintain the data or identity accross requests, restarts or pod rescheduling. i.e even if a pod crashes or the pods are scaled, the data will reflect in the new pods. example can be database
+
+# Deployment objects are used to deploy stateless apps. StatefulSet obejects are used to deploy stateful app like databases.
+
+# Deployment ---> app pods. when we scale the pods, all the pods will create at once
+
+# StatefulSet ---> database pods. when we scale, the new pods will create by cloning the data from the old pods and hence will deploy one after another.
+
+# manifest file for statefulset
+---
+apiVersion:v1
+kind: StatefulSet
+metadata:
+  name: ss-name
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: swiggy
+  template:
+    metadata:
+      labels:
+        app: swiggy
+    spec:
+      containers:
+        - name: cont-1
+          image: nginx
+          ports:
+            - containerPort: 80
+
+# the pods created via stateful set will follow indexing. Deleting pods will follow LIFO
+
+# Ususally volumes are used to replicate data.
+
+< DaemonSet >
+
+# helps to create a pod for every node not to run the apps but to cpature data related to the node to monitor and can do multiple purposes like logging, executing scripts, etc. When a new node is created, a pod will be created and when a node is deleted, the pod will also be deleted.
+
+# manifest file for statefulset
+---
+apiVersion:v1
+kind: DaemonSet
+metadata:
+  name: monitor
+spec:
+  selector:
+    matchLabels:
+      app: swiggy
+  template:
+    metadata:
+      labels:
+        app: swiggy
+    spec:
+      containers:
+        - name: cont-1
+          image: nginx
+          ports:
+            - containerPort: 80
+
+< Suggestion commands for clusters >
+
+ * list clusters with: kops get cluster
+ * edit this cluster with: kops edit cluster clustername.k8s.local
+ * edit your node instance group: kops edit ig --name=clustername.k8s.local nodes-us-east-1a
+ * edit your control-plane instance group: kops edit ig --name=clustername.k8s.local control-plane-us-east-1a
+ * Finally configure your cluster with: kops update cluster --name clustername.k8s.local --yes --admin
+
+| kubectl get ds |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
