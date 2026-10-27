@@ -1,0 +1,74 @@
+# We cannot diectly access a container within a pod. We need to expose the pod for that. We use services in kubernetes to expose pods. Simply Service is a method for exposing pods in your cluster.
+
+# 4 types of services. namely, ClusterIP, NodePort, LoadBalancer and ExternalName
+
+ClusterIP: Available only within the cluster. Minly used for database pods, since we do not want to expose databases to have external access
+
+# svc manifest file for clusterIP:
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-name
+spec:
+  type: ClusterIP
+  selector:
+    app: swiggy
+  ports:
+    - port: 80
+      targetPort: 80
+
+# Nodeport: this svc help-s to access the pods from the internet
+
+# The ports that can be exposed via NodePort has a range. which is 30000 to 32767. if we don't mention the port, it will be assigned randomly. we can assign the nodeport as well. but it should be within the range.
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-name
+spec:
+  type: NodePort
+  selector:
+    app: swiggy
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30002
+
+# Here the drawback is all the requests will go toa single node. becoz the pod is accessed through the pod's public IP and via the mentioned port.
+
+# This is solved by using Load Balancer
+
+# Load Balancer distributes or routes the traffic(requests) among the servers
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lb-name
+spec:
+  type: LoadBalancer
+  selector:
+    app: swiggy
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30003
+
+| kubectl describe svc svc-name |
+
+| kubectl delete svc svc-name |
+
+
+
+
+
+
+
+
+
+
+
+
