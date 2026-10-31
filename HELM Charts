@@ -1,0 +1,18 @@
+# Install HELM
+
+|helm create helm-name | create a helm chart |
+
+# go to templates folder and delete the default templates. Cretae your own templates
+
+go back to your helm folder
+
+| helm install release-name . | deploys all the products from the templates |
+
+| helm ls | gives the release ionfo | we can use this info to rollback |
+
+| helm upgrade release-name . | updates the changes made in the templates |
+
+| helm uninstall release-name |
+
+| helm package helm-name/ | create a tgz file to p[ush to github to help share the helm-charts, like we share docker images through docker hub |
+
