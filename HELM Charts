@@ -24,16 +24,17 @@ go back to your helm folder
 
 # to downoad the helm repo from the github page to your new cluster
 
-| heml repo add myrepo 
+| helm repo add myrepo https://killadi98.github.io/helm-demo/ |
 
+| helm repo ls | list of repos |
 
+| helm repo update | to update any chnages from the original repo |
 
+| helm install release-name myrepo/helm-name | to deploy the objects from the helm |
 
+# we can use the same helm charrt to deploy the application in a ny cluster or any name-space
 
-
-
-
-
+| helm install release-name myrepo/helm-name -n dev | to deploy the objects from the helm in the dev namespace |
 
 
 
