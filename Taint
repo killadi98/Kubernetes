@@ -1,0 +1,5 @@
+# If a node is tainted, pods can't be scheduled in that node. Control plane will not be avialable to schedule new pods bcoz it is an important node with all the cluster information and controls. aHence we dont want to expose it for security purposes. k8S will make it tainted by default.
+
+# If we want to schedule pods in the tainted nodes, we need to make the pods tolerated. We usually taint special nodes.
+
+| kubectl taint nodes i-05d72ac476bce20bc dedicated=aiservice:NoSchedule | the mentioned node is tainted |
