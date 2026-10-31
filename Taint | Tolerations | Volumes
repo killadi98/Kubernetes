@@ -1,0 +1,130 @@
+< Taint & Tolerations >
+
+# If a node is tainted, pods can't be scheduled in that node. Control plane will not be avialable to schedule new pods bcoz it is an important node with all the cluster information and controls. aHence we dont want to expose it for security purposes. k8S will make it tainted by default.
+
+# If we want to schedule pods in the tainted nodes, we need to make the pods tolerated. We usually taint special nodes.
+
+| kubectl taint nodes i-05d72ac476bce20bc dedicated=aiservice:NoSchedule | the mentioned node is tainted |
+
+# to creta epods with tolerations so that they can be scheduled in tainted nodes:
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-1
+spec:
+  containers:
+    - name: cont1
+      image: nginx
+      ports:
+        - containerPort: 80
+  tolerations:
+    - key: dedicated
+      operator: Equal
+      value: aiservices
+      effect: NoSchedule
+
+# Tolerated pods will only be created in tainted nodes? No. They can be created in any avialable node
+
+# we can combine taint, tolerations and node selectors to create pods only in a specific node.
+
+< Volumes >
+
+Kinds of Volumes in k8s:
+---> Empty Dir: A volume is created along with the containers within a pod. The containers will reflect the data from the volume. If a container is crashed, a new container will be created and the data from pod-1 will replicate with pod-2 and vice versa. But if the pod itself is crashed, a new pod will be created but the data from the volume and the data will be lost.
+
+---> HOST PATH: Volume will be created in a node and mounted to a path. this volume will be mounted with pods and hence the containers. Now, even if the pods are crashed, the new pods will replicate the data from the volume. But the new pod will replicate the data only if it is created in the same node. ofcourse. Also, if the node itself is crashed, all the data will be lost. Hence both empty Dir and host path are nbot preferred.
+
+---> Persistent Volume(PV): 
+---> Persistent Volume CLaim(PVC):
+
+Cloud(EBS) will be used to store volume. We have two types to use this. Static and Dynamic. 
+
+# In static, A cloud admin will allow a storage, of lets say 100GB. from that, K8s admin will allow a storage, of lets say 25GB. from the devs will request for a storage, of say 10GB. This will now be mounted on to the pods. At the end the data is stored in the cloud(EBS). even if the cluster crahses we dont lose the data.
+
+# In Dynamic, the flow is opposite. Dev ---> 10GB ---> PVC ---> PV ---> EBS.
+
+# the advantage in using dyanamic is, we only purchase the amount of storage that we need.
+
+# we need storage classe for this.
+
+| kubectlo get sc | list of storage classes |
+
+# Manifest file for storage-class:
+
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: mysql-gp3
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "false"
+provisioner: ebs.csi.aws.com
+parameters:
+  type: gp3
+  fsType: ext4
+  encrypted: "true"
+  iops: "3000"
+  throughput: "125"
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+
+# Manifest file for persistent volume claim:
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: mysql-gp3
+  resources:
+    requests:
+      storage: 10Gi
+
+# Deployment file with volumen mounting.
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flm
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: swiggy
+  template:
+    metadata:
+      labels:
+        app: swiggy
+
+    spec:
+      containers:
+        - name: cont1
+          image: shaikmustafa/paytm:bus
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: mydata
+              mountPath: /var/lib/mysql/
+
+      volumes:
+        - name: mydata
+          persistentVolumeClaim:
+            claimName: mysql-data
+
+
+
+
+
+
+
+
+
+
+
