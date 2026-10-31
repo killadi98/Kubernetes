@@ -16,3 +16,27 @@ go back to your helm folder
 
 | helm package helm-name/ | create a tgz file to p[ush to github to help share the helm-charts, like we share docker images through docker hub |
 
+| helm repo index . | creates index.yml file |
+
+# We need botgh index and the gunzip file to push to github 
+
+# once the files are ready push them to github and create a github page for the repo
+
+# to downoad the helm repo from the github page to your new cluster
+
+| heml repo add myrepo 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
