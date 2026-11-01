@@ -1,0 +1,107 @@
+< Role Based Access Control >
+---> Role : Creating the previliges or permissions say, pods:view | svc: create&delete | cm:create& view. specified to only a namspace
+---> Cluster-Role: This is for cluster-wide namespaces and obejects
+---> Role Building: attaching the role to the user (to a specific name space)
+---> Cluster Role Binding: attaching the role to the user all over the cluster
+
+| kubectl config view | can find the list of users | default root user is minikube |
+
+# to crete a user, we neeed a client-crtificate and a client-key
+
+| openssl genrsa -out pavan.key 2048 | generates a key for user pavan |
+
+| openssl req -new -key pavan.key -out pavan.csr -subj "/CN=pavan/O=group1" | to generate a client sign request |
+
+| openssl x509 -req -in pavan.csr -CA ~/.minikube/ca.crt -CAkey ~/.minikube/ca.key -CAcreateserial -out pavan.crt -days 500 | to generate a client certificate for user pavan |
+
+# Now we have to crete a user
+| kubectl config set-credentials pavan --client-certificate=pavan.crt --client-key=pavan.key | creates a user using the previously created certificate and key |
+
+# Now we need to create a context for the user to add the user to the cluster. This is used to switch from one user to another user.
+# context name for minikube is minikube | can find using kubectl config view
+
+| kubectl config set-context devops-practice --cluster=minikube --user=pavan | to create the context |
+
+| kubectl config use-context devops-practice | to switch the context |
+
+# the role is created but there are no permissions yet bcoz we didnot attach any permissions.
+
+# manifest file for role:
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: dev-role
+  namespace: dev
+rules:
+  - apiGroups: ["*"]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "create"]
+
+#now binding.yml
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pavan-rb
+  namespace: dev
+subjects:
+  - kind: User
+    name: pavan
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: dev-role
+  apiGroup: rbac.authorization.k8s.io
+
+| kubectl auth can-i get po | output will be no since the user pavan does not have permission for default ns|
+
+| kubectl auth can-i get po -n dev | output will be yes | similarly we can check our permissions to all objects |
+
+# For cluster-role, the manifest file is similare.
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dev-cluster-role #namespace is irrelavant
+rules:
+  - apiGroups: ["*"]
+    resources: ["pods", "services"]
+    verbs: ["get", "list", "watch", "create"]
+
+# cluster-role-binding manifest file
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pavan-crb
+subjects:
+  - kind: User
+    name: pavan
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: dev-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
