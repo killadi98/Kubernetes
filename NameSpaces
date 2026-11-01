@@ -1,0 +1,152 @@
+# Namespaces in k8s will help us to isolate the contents and resources. Helps us to organize the resources. all the resources created without any specified namespace will be created in the default namespace.
+
+# other name spaces which are created by k8s are 
+---> kube-node-lease: the resources required to check the health status of worker nodes will be         available in this ns
+---> kube-public: objects created in this ns will be available to all other namespaces
+---> kube-system: The control plane pods will be created in this ns.
+
+| kubectl get po -n kube-system | list of pods form the kube-system ns |
+
+| kubectl get all -n kube-system | list of all the objects form the kube-system ns |
+
+| kubectl create ns dev | creates a namespace called dev |
+
+# manifest file for ns:
+---
+api-Version: v1
+kind: Namespace
+metadata:
+  name: test
+
+|| kubectl config view | grep -i namespace || gives the ns that we are currently in || 
+
+| kubectl config set-context --current --namespace=test | to change the current ns to test ns |
+
+| kubectl run test-pod --image=nginx -n test | creates the test-pod on test ns without changing the current ns to test |
+
+| kubectl create -f deploy.yml -n dev | to deploy the pods in dev ns using deployment manifest file without changing the current ns |
+
+| kubectl get deploy -A | list of deployments in all ns |
+
+| kubectl get po -A | list of pods in all ns |
+
+# we can aslo give the namespace in deployment manifest file:
+---
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: deployment-name
+  namespace: dev
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels: 
+        app: web-app
+    spec:
+      containers:
+        - name: cont-1
+          image: nginx
+          ports:
+            - containerPort: 80
+# dev ns must exist before creating the deployment otherwise the deployment will not create
+
+| kubectl delete ns ns-name | deletes the ns |
+#Always delete the resources in the ns before deleting the ns
+
+< Resource Quota >
+
+# to set a limit for containers to use the resources. if limits are not set, the pods and sometimes the nodes might crash.
+
+# k8s admin will set limits for the ns. when we create the pods in he ns, we will have to set the limits.
+
+# manifest file for resource quota:
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: test-rq
+  namespace: test
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "2"
+    limits.memory: 2Gi
+    pods: "5"
+    services: "3"
+    configmaps: "2"
+    secrets: "2"
+
+| kubectl get quota -n test |
+
+| kubectl describe ns -n test |
+
+# now if we create a pod without mentioning the resources, it will not be created
+
+#manifest file for pods, with resources:
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-1
+  namespace: test
+spec:
+  containers:
+    - name: cont-1
+      image: nginx
+      ports:
+        - containerPort: 80
+      resources:
+        requests:
+          cpu: "0.2m"
+          memory: "200Mi"
+        limits:
+          cpu: "0.4m"
+          memory: "500Mi"
+
+| kubectl describe po pod-1 -n test |
+
+# manifest file for deployment with pod resources:
+---
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: deployment-name
+  namespace: dev
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels: 
+        app: web-app
+    spec:
+      containers:
+        - name: cont-1
+          image: nginx
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "50Mi"
+            limits:
+              cpu: "400m"
+              memory: "100Mi"
+
+
+
+
+
+
+
+
+
+
+
