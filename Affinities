@@ -1,0 +1,127 @@
+# Ususally the scheduler decides where to create a pod
+
+---> Node-affinity: A custom rule to define where we want to schedule the pod on a specific node. "Which nodes should I run on?”. Looks at nodelabels.
+
+# Lets say we have a special node and we want specific app pods to be created in that node. we assing label to that node and we assign that label to the pod's label selector
+
+#manifest file for deployment with node affinity
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+        - name: cont-1
+          image: nginx
+          ports:
+            - containerPort: 80
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - spl
+
+| kubectl label node i-03faa57766921d8c0 node-type=spl | adds a label to the mentioned node |
+
+# required during scheduling means the pod willbe created only when a node with the mentioned label exists. if there is no node with the mentioned label, the pod will go to pending state.
+
+# if it is preferred during scheduling, then the pod will be created in the nodee with the mentiobned label type. if the node with the mentioned lable is not present then the pod can be created in any other available node.
+
+---> Pod-affinity: “Which pods should I run near?”. Looks at Labels of pods already running.
+
+# for example, we have three nodes, each on a different data centre. lets say we have two pods, one is application pod and one is db pod. to decrease the latency, we want to create the db pod wherever the app pod is created. We have three options here. We can select same node, same availability zone or same region.
+
+#manifest file to create app pods in the node where db pods are deployed:
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+        - name: cont-1
+          image: nginx
+          ports:
+            - containerPort: 80
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - db
+              topologyKey: kubernetes.io/hostname
+
+# hostname  indicates the server. we can change it to chnage our preferrence to avilablity zones or regions.
+
+---> Anti-affinity: “Which pods should I stay away from?”. Looks at Labels of pods already running. opposite to pod-affnity. Generaly used for high availability. fro instance, we have an app pod already deployed in 1A avilability zone, to increase the availability, we want the other replicas to be deployed in 1B or any other availability zones.
+
+# manifest file:
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+        - name: cont-1
+          image: nginx
+          ports:
+            - containerPort: 80
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - db
+              topologyKey: kubernetes.io/hostname
+
+
+
+
+
+
+
+
+
+
+
+
+
