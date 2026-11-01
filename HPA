@@ -1,0 +1,50 @@
+< Horizontal Pod Autoscaling >
+
+AutoScaling is of two types:
+---> Horizontal:
+      lets say initially we have 3 pods. if i take a threshold value of average cpu utilization as       60%, automatically number of pods increases to decrease the average cpu utilization. which         is directly proportional to the traffic. And when traffic reducesc to, say 5% of avg cpu           utilization, the number of pods decreases. This is horizontal scaling.
+---> Vertcal:
+      this kind of scaling does not increase the number of pods, but increases the size of the           servers. sixe meaning the instance type. Increasing the resources of the pod. For instance,        changing the t3.micro instance type to c7i-flex.large.
+
+# Horizontal is preferred because vertical can only happen by sopping the instance type.
+
+< HPA Manifest file >
+
+|| kubectl api-resources | grep -i "hpa" || for the api version of hpa ||
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: my-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: deployment-name
+  minReplicas: 2
+  maxReplicas: 10
+  
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+
+# to replicate dummy load, we can use a package called stress
+
+# connect the kops instance with multiple terminals
+
+| kubectl get po -w |
+
+| kubectl exec -it pod-name -- bash | to get into the pod |
+
+| apt update -y && apt install stress -y | instlls stress package |
+
+| stress -c 2 -t 150 -v | applying load on the container |
+
+| kubectl rollout pause deploy deployment-name | Pauses the new updates |
+
+| kubectl rollout resume deploy deployment-name | It will allow the pending updates |
