@@ -68,13 +68,32 @@ In a second terminal, run kubectl get pods -n lab1 -w. Then update the image to 
 
 < Task-4 >
 
-Run kubectl rollout status and kubectl rollout history. Make the history show a change-cause for each revision (annotate it).
+# Run kubectl rollout status and kubectl rollout history. Make the history show a change-cause for each revision (annotate it).
+
+| kubectl rollout status deploy deployment-name -n lab1 |
+
+< yaml for adding annotations while making the changes to the manifest file >
+metadata:
+  name: web
+  namespace: lab1
+  annotations:
+    kubernetes.io/change-cause: "upgrade to nginx 1.26"
+
+| kubectl rollout history deploy deployment-name -n lab1 |
+
+< Task-5 >
+
+# Break it: update the image to nginx:doesnotexist. Observe the pod states and the rollout. Confirm the old pods are still serving (that’s maxUnavailable: 0 working).
+
+| kubectl rollout undo deploy deployment-name -n lab1 |
+
+| kubectl rollout status deploy deployment-name -n lab1 |
+
+< Task-6 >
+
+# Roll back to a specific revision (not just the previous one) using --to-revision.
 
 
 
 
 
-
-
-            initialDelaySeconds: 3
-            periodSeconds: 5
