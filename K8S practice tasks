@@ -1,0 +1,80 @@
+< Task-1 >
+Create namespace lab1. Generate a Deployment YAML for nginx:1.25 with 3 replicas
+
+| kubectl create ns lab1 |
+#manifest file for deployment
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-name
+  namespace: lab1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+        - name: cont-1
+          image: nginx:1.25
+          ports:
+            - containerPort: 80
+
+< Task-2 >
+Edit the YAML to set strategy.rollingUpdate to maxSurge: 1 and maxUnavailable: 0. Add a readiness probe (HTTP GET / on port 80). Apply it.
+
+< Strategy >
+
+# Controls how old pods are replaced on a pod template change.
+# RollingUpdate (default): gradual, no downtime. Recreate: kill all, then start; downtime.
+# maxSurge: extra pods above desired. maxUnavailable: pods allowed below desired. Default 25%/25%. Both can’t be 0.
+# Production: maxSurge: 1, maxUnavailable: 0 (capacity never dips).
+
+< yaml for strategy >
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+< readinessProbe >
+
+# Decides if a pod gets traffic. Fail = removed from Service endpoints, not restarted.
+# Rollouts wait for it, so a bad release stalls while old pods keep serving.
+# No probe = Ready the moment the container starts, so traffic can hit a broken app.
+
+< yaml for readinessProbe >
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: 80
+  initialDelaySeconds: 3
+  periodSeconds: 5
+
+Interview answer:
+
+The default 25%/25% is acceptable for small or non-critical services, but for production I set maxSurge and maxUnavailable explicitly, usually maxUnavailable: 0, and pair them with readiness probes, so capacity never drops and a bad release stalls instead of causing an outage
+
+< Task-3 >
+
+In a second terminal, run kubectl get pods -n lab1 -w. Then update the image to nginx:1.26 and watch the rollout. Confirm pods are replaced one at a time.
+
+< Task-4 >
+
+Run kubectl rollout status and kubectl rollout history. Make the history show a change-cause for each revision (annotate it).
+
+
+
+
+
+
+
+            initialDelaySeconds: 3
+            periodSeconds: 5
