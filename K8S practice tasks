@@ -62,6 +62,40 @@ Interview answer:
 
 The default 25%/25% is acceptable for small or non-critical services, but for production I set maxSurge and maxUnavailable explicitly, usually maxUnavailable: 0, and pair them with readiness probes, so capacity never drops and a bad release stalls instead of causing an outage
 
+< Manifest file >
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-name
+  namespace: lab1
+  annotations:
+    kubernetes.io/change-cause: "changed the image back to nginx 1.25 after pausing"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+        - name: cont-1
+          image: nginx:1.25
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 3
+            periodSeconds: 5
+
 < Task-3 >
 
 In a second terminal, run kubectl get pods -n lab1 -w. Then update the image to nginx:1.26 and watch the rollout. Confirm pods are replaced one at a time.
@@ -103,7 +137,7 @@ metadata:
 
 | kubectl rollout pause deploy deployment-name -n lab1 |
 
-
+| kubectl rollout resume deploy deployment-name -n lab1 |
 
 
 
