@@ -101,6 +101,16 @@ metadata:
 
 | kubectl scale deploy deployment-name --replicas=5 -n lab1 |
 
+| kubectl rollout pause deploy deployment-name -n lab1 |
+
+
+
+
+
+
+
+
+
 
 
 
