@@ -81,17 +81,27 @@ metadata:
 
 | kubectl rollout history deploy deployment-name -n lab1 |
 
-< Task-5 >
+< Task-5 & 6 >
 
-# Break it: update the image to nginx:doesnotexist. Observe the pod states and the rollout. Confirm the old pods are still serving (that’s maxUnavailable: 0 working).
+# Break it: update the image to nginx:doesnotexist. Observe the pod states and the rollout. Confirm the old pods are still serving (that’s maxUnavailable: 0 working). Diagnose using only kubectl describe and kubectl get events. Then recover with kubectl rollout undo.
 
 | kubectl rollout undo deploy deployment-name -n lab1 |
 
 | kubectl rollout status deploy deployment-name -n lab1 |
 
-< Task-6 >
+< Task-7 >
 
 # Roll back to a specific revision (not just the previous one) using --to-revision.
+
+| kubectl rollout undo deploy deployment-name --to-revision=1 -n lab1 |
+
+< Task-8 >
+
+# Scale to 5, then pause the rollout, change the image, resume, and note what pausing did.
+
+| kubectl scale deploy deployment-name --replicas=5 -n lab1 |
+
+
 
 
 
