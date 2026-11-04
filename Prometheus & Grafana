@@ -1,1 +1,40 @@
+# Prometheus and Grafana are observability tools
+
+# Prometheus is used to monitor every detail like the cpu usage, RAM, storage about all the nodes, pods, containers, volumes. Number of requets, network outages, etc. Prometheus actually scrapes every metric. But since it is hard to analyze the raw live data, we use grafana for vizualization.
+
+# We can install tools and packages using helm.
+
+# Install helm and go to helm.sh. find kube-prometheus-stack from the charts.
+
+| helm install [RELEASE_NAME] oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack |
+
+| kubectl get secret --namespace default -l app.kubernetes.io/component=admin-secret -o jsonpath="{.items[0].data.admin-password}" | base64 --decode ; echo | to get the psd for grafana dashboard. |
+
+# find the svc for prometheus-kube-prometheus-prometheus from kubectl get svc
+
+# It will be a cluster IP type svc. But we need to access it, hence chnage the svc type to load balancer.
+
+| kubectl patch svc prometheus-kube-prometheus-prometheus -p '{"spec":{"type":"LoadBalancer"}}' | to change the type of prometheus svc to load balancer |
+
+| kubectl patch svc prometheus-grafana -p '{"spec":{"type":"LoadBalancer"}}' |
+to change the type of grafana svc to load balancer |
+
+# access the grafana dashboard via the dns and login using the credentials |
+
+| import the required dashboards |
+
+# Node level dashboards for nodes, cpu, memory, storage, etc.
+# a dashboard for the resources like pods, deployments, containers, pvc, rs, etc.
+
+# every dashboard runs on a unique port. dashboards like node exporter, k8s dashboard, etc can be found and imported from the url present
+
+
+
+
+
+
+
+
+
+
 
