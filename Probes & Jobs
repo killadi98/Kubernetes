@@ -1,0 +1,129 @@
+< Probes >
+
+# what if container is not started? or what if container is failed to start? or what if container is started but is not ready to receive the traffic?
+
+# Probes are used to check the containers' health status. Three ttypes of probes in k8s:
+
+---> liveness probes (The restart action):
+
+Let's say a container is stuck (not crashed). can be due to various reasons:
+-> Deadlock:  2 processes wait on each other
+-> infinite loop: while loops
+-> waiting on external service: container is waiting for a DB response but the DB is unreachable.
+
+In these scenarions, k8s can't restart the containers. It just sits there, frozen. this is when liveness probes can be used. if we use liveness probe in this case, the kubelet kills the container and starts a fresh one. Here only the container restarts, but the pod stays.
+
+NOTE: Only use this probe when restarts can truly fix the problems.
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-1
+spec:
+  containers:
+    - name: cont-1
+      image: nginx
+      ports:
+        - containerPort: 80
+      args:
+      - /bin/sh
+      - -c # represents a command
+      - touch /tmp/pavan; sleep 1000; # sleep because when we give a command, the container exits after executing the command
+      livenessProbe:
+        exec:
+          command:
+          - cat
+          - /tmp/pavan
+        initialDelaySeconds: 5 # wait for 5 secconds after the container is started to check for the first time
+        periodSeconds: 10 # checks if the file is present for every 10 seconds
+        timeoutSeconds: 30 # wait for 30 seconds when the probe fails
+
+| kubectl exec -it pod-1 -- rm -f /tmp/pavan | delete the file that we created and check if the probe restarts the cont |
+
+---> readiness probes(Traffic Control):
+
+A pod is running, but is not ready to accept the traffic. When a container starts:
+-> The app may still be loading data
+-> cashe may still be warmning
+-> dependecies may still be initializing
+-> DB connections may still not be established.
+
+In these scenarios, readiness probes can be used to check whether the app is ready to receive requests.
+
+-> If the readiness probe fails:
+~ K8s keeps the pod running
+~ it removes the pod from the vc endpoints
+~ stops sending new traffic
+~ continues checking periodically
+
+-> Once the probe succeeds:
+~ k8s marks the pod as ready
+~ and the traffice starts flowing to the pod again.
+
+
+---> startup probes(The wait action):
+
+For slow-starting apps (big JVM apps, apps that warm caches). While it’s running, the liveness and readiness probes are disabled. Once it succeeds, they take over. Without it, a slow app can be killed by its liveness probe before it ever finishes booting.
+
+< Jobs >
+
+# Job in k8s is used to run a finite task like database migration, data processing, batch processing, data backup, sending bulk email, cleaning up tasks, etc.
+
+# When we create a job, a pod will be created and when the assigned task is completed, the pod will no longer be in running stage and it will go to finished state.
+
+# Cron Job:  we can schedule the job.
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: job-name
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never # pod does not need to restart after the
+ task is completed
+          containers:
+            - name: cont-1
+              image: nginx
+              ports:
+                - containerPort: 80
+              args:
+                - /bin/bash
+                - -c
+                - echo "Welcome to my session"; sleep 10;
+
+Terminal Session:
+
+[root@ip-172-31-1-153 ~]# kubectl get cj
+NAME       SCHEDULE    TIMEZONE   SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+job-name   * * * * *   <none>     False     0        <none>          33s
+[root@ip-172-31-1-153 ~]# kubectl get po
+NAME    READY   STATUS    RESTARTS      AGE
+pod-1   1/1     Running   2 (12m ago)   18m
+[root@ip-172-31-1-153 ~]# kubectl get cj
+NAME       SCHEDULE    TIMEZONE   SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+job-name   * * * * *   <none>     False     1        12s             54s
+[root@ip-172-31-1-153 ~]# kubectl get po
+NAME                      READY   STATUS    RESTARTS      AGE
+job-name-29897058-xn4jn   1/1     Running   0             15s
+pod-1                     1/1     Running   2 (13m ago)   18m
+[root@ip-172-31-1-153 ~]# kubectl get po
+NAME                      READY   STATUS      RESTARTS      AGE
+job-name-29897058-xn4jn   0/1     Completed   0             35s
+pod-1                     1/1     Running     2 (13m ago)   18m
+[root@ip-172-31-1-153 ~]# kubectl get cj
+NAME       SCHEDULE    TIMEZONE   SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+job-name   * * * * *   <none>     False     0        48s             90s
+
+
+
+
+
+
+
+
+
