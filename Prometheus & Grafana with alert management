@@ -28,7 +28,10 @@ to change the type of grafana svc to load balancer |
 
 # every dashboard runs on a unique port. dashboards like node exporter, k8s dashboard, etc can be found and imported from the url present
 
+< Alert Management >
 
+# Lets set up an alert on slack when a pod's cpu usage goes beyond 60%
+# Create an account in slack and create a workspace
 
 
 
