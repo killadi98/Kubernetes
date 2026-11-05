@@ -1,0 +1,29 @@
+# GitOps: It is a way of managing software infrastructure and deployments using Git as the source of truth. Which means all our configurations like deployments, services, secrets are stored in git repo. Whenever changes are made in those YAML files, gitops tools like Argo CD or Flux will detect and apply those changes on the k8s cluster. It ensures that the live infrastructure matches the configurations in the git repo. This can be identified as continuous deployment.
+
+# We have some rules when argo cd is implemented.
+---> do not make any changes outside the git repo. like scaling the pods via the server.this is to avoid out of sync issues. orgo cd will always try to maintain desired=actual. 
+
+# create a separate namespace for argocd since it will have it's own resources and it will be confusing if we run all those in the default ns.
+
+| kubectl create namespace argocd |
+| kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml |
+
+# change argocd-server from clusterIP to loadbalancer
+
+| kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}' |
+
+# access via the load balancer dns
+
+# Cred:
+username: admin
+psd: run the below commands
+
+export ARGO_PWD='kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d'
+echo $ARGO_PWD
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+# create an application by integrating a repo from github
+
+
+
+
