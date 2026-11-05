@@ -8,3 +8,4 @@ Internet → Load Balancer → Ingress Controller → Service A (/api)
 
 # Ingress controllers helps us to perform host based and path based routing
 
+# refer to iungress notes pdf
