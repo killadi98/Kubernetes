@@ -86,7 +86,7 @@ spec:
     requests:
       storage: 10Gi
 
-# Deployment file with volumen mounting.
+# Deployment file with volume mounting.
 
 ---
 apiVersion: apps/v1
