@@ -1,0 +1,10 @@
+# when we have a number of services, say 100, then we can't expect to have 100 load balancers.
+# We use ingress to solve this problem. Ingress helps us by exposing all the nodes with their cluster-IPs. Ingress has a DNS. And it will route the traffic to the services in the cluster using the cluster IP.
+
+# With Ingress we use one load balancer for many apps:
+Internet → Load Balancer → Ingress Controller → Service A (/api)
+                                              → Service B (/shop)
+                                              → Service C (grafana.example.com)
+
+# Ingress controllers helps us to perform host based and path based routing
+
