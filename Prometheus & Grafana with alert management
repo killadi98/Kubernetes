@@ -33,9 +33,14 @@ to change the type of grafana svc to load balancer |
 # Lets set up an alert on slack when a pod's cpu usage goes beyond 60%
 # Create an account in slack and create a workspace
 
+# create contact point in grafana.
+# alerting ---> contact point ---> new contact point ---> slack integration ---> observability recepient ---> webhooks
 
+# api.slack.com/apps ---> create new app -> starter app -> name & workspace -> create&install ---> app settings -> incoming webhooks -> activate -> add new webhook -> select observability. copy and paste the webhook url on grafana webhook section
 
+# add rules
 
+# we can test the alert system by adding stress in the pod.
 
 
 
